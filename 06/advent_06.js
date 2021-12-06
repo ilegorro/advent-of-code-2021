@@ -3,7 +3,6 @@ const fs = require('fs')
 
 function solution1(data) {
   const result = [...data]
-  let prevLength = data.length
   for (let day = 0; day < 80; day++) {
     let newFish = 0
     result.forEach((element, idx) => {
@@ -17,22 +16,29 @@ function solution1(data) {
     for (let i = 0; i < newFish; i++) {
       result.push(8)
     }
-    const currentLength = result.length
-    const rate = (currentLength / prevLength).toFixed(2)
-    console.log({ prevLength, currentLength, rate })
-    prevLength = currentLength
   }
   return result.length
 }
 function solution2(data) {
-  // f(x) = a*(1 + r)^x
-  // a - initial amount
-  // r - growth rate
-  // x - number of time intervals
-  const a = data.length
-  const x = 256
+  let stateCounts = new Array(9).fill(0)
 
-  return undefined
+  //count fish of each initial state
+  data.forEach((el) => stateCounts[el]++)
+
+  for (let i = 0; i < 256; i++) {
+    //every day all states except 0 decrease by 1
+    const [zeros, ...rest] = stateCounts
+
+    // all zeros become six
+    rest[6] += zeros
+
+    // new fish with state eight
+    rest[8] = zeros
+
+    stateCounts = rest
+  }
+
+  return stateCounts.reduce((acc, el) => acc + el, 0)
 }
 
 const data = fs
