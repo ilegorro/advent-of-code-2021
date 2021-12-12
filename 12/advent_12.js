@@ -13,24 +13,19 @@ function solution(data) {
     cons.set(left, leftSet)
     cons.set(right, rightSet)
   })
-  console.log(cons)
 
-  let visitedPoints
   const routes = []
 
   const findRoute = (point, route) => {
-    if (point[0].match(/[a-z]/)) {
-      visitedPoints.push(point)
-    }
-    route += `${point}-`
+    route += `,${point}`
     const pointSet = cons.get(point)
     pointSet.forEach((el) => {
+      const lowCase = el.match(/[a-z]+/)
+      const routeSteps = route.split(',')
       if (el === 'end') {
-        route += 'end'
-        console.log(visitedPoints)
-        console.log(route)
+        route += `,${el}`
         routes.push(route)
-      } else if (!visitedPoints.includes(el)) {
+      } else if (!lowCase || !routeSteps.includes(el)) {
         findRoute(el, route)
       }
     })
@@ -38,16 +33,14 @@ function solution(data) {
 
   const startSet = cons.get('start')
   startSet.forEach((el) => {
-    visitedPoints = ['start']
-    findRoute(el, 'start-')
+    findRoute(el, 'start')
   })
 
-  //console.log(routes)
-  console.log(routes.length)
+  console.log('Number of routes:', routes.length)
 }
 
 const data = fs
-  .readFileSync(`${__dirname}/advent_12_input_test.txt`, 'utf8')
+  .readFileSync(`${__dirname}/advent_12_input.txt`, 'utf8')
   .split('\n')
   .map((el) => el.split('-'))
 
