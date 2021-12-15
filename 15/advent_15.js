@@ -49,10 +49,10 @@ function handlePoint(pointsToHandle, handledPonts, field, data) {
   neighbors.sort((a, b) => a[1] - b[1])
   neighbors.forEach((el) => {
     if (!pointIsHandled(el[0], handledPonts)) {
-      calcPoint(el[0], pointValue, data, field, pointsToHandle)
       !!pointsToHandle.find(
         (elem) => elem[0][0] === el[0][0] && elem[0][1] === el[0][1]
       ) || pointsToHandle.push([el[0]])
+      calcPoint(el[0], pointValue, data, field, pointsToHandle)
     }
   })
 }
