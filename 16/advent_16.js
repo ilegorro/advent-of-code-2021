@@ -1,6 +1,18 @@
 'use strict'
 const fs = require('fs')
 
+// function parseLiteralValue(literalValue) {
+//   let resultBin = ''
+//   let keepReading = true
+//   while (keepReading) {
+//     const part = literalValue.substring(0, 5)
+//     literalValue = literalValue.substring(5)
+//     keepReading = part[0] === '1'
+//     resultBin += part.substring(1)
+//   }
+//   return resultBin
+// }
+
 function solution1(data) {
   const dict = new Map()
   const dictReverse = new Map()
@@ -14,62 +26,60 @@ function solution1(data) {
     binString += dict.get(el)
   })
 
-  const packetVersion = +dictReverse.get(
-    binString.substring(0, 3).padStart(4, '0')
-  )
-  const packetTypeId = +dictReverse.get(
-    binString.substring(3, 6).padStart(4, '0')
-  )
-  const isLiteralValue = packetTypeId === 4
+  let packetVersionSum = 0
+  handlePacket(binString)
+  console.log(packetVersionSum)
 
-  console.log({ packetVersion, packetTypeId, isLiteralValue })
-
-  const parseLiteralValue = (literalValue) => {
-    //console.log(literalValue)
-    let resultBin = ''
-    let keepReading = true
-    while (keepReading) {
-      const part = literalValue.substring(0, 5)
-      literalValue = literalValue.substring(5)
-      keepReading = part[0] === '1'
-      resultBin += part.substring(1)
-    }
-    //console.log(resultBin)
-    return resultBin
-  }
-
-  if (isLiteralValue) {
-    let literalValue = binString.substring(6)
-    const resultBin = parseLiteralValue(literalValue)
-    console.log(parseInt(resultBin, 2))
-  } else {
-    const lengthTypeId = binString.substring(6, 7)
-    let lengthInBits
-    let numberOfSubPackets
-    const values = []
-
-    if (lengthTypeId === '0') {
-      lengthInBits = parseInt(binString.substring(7, 22), 2)
-      let subPackets = binString.substring(22)
-      const resultBin1 = parseLiteralValue(subPackets.substring(6, 11))
-
-      values.push(parseInt(resultBin1, 2))
-      subPackets = subPackets.substring(11)
-
-      const resultBin2 = parseLiteralValue(
-        subPackets.substring(6, lengthInBits - 11)
-      )
-      values.push(parseInt(resultBin2, 2))
-    } else {
-      numberOfSubPackets = parseInt(binString.substring(7, 18), 2)
-      let subPackets = binString.substring(18)
-      for (let i = 0; i < numberOfSubPackets; i++) {
-        const resultBin = parseLiteralValue(subPackets.substring(6, 11))
-        values.push(parseInt(resultBin, 2))
-        subPackets = subPackets.substring(11)
+  function handlePacket(packet, counter) {
+    console.log(packet)
+    if (typeof counter === 'number') {
+      if (counter === 0) {
+        counter = undefined
+        return
+      } else {
+        counter--
       }
     }
-    console.log({ lengthInBits, numberOfSubPackets, values })
+
+    const packetVersion = +dictReverse.get(
+      packet.substring(0, 3).padStart(4, '0')
+    )
+    packetVersionSum += packetVersion
+    const packetTypeId = +dictReverse.get(
+      packet.substring(3, 6).padStart(4, '0')
+    )
+
+    console.log({ packetVersion })
+
+    if (packetTypeId === 4) {
+      console.log('literal')
+      let literalValue = packet.substring(6)
+      let resultBin = ''
+      let keepReading = true
+      while (keepReading) {
+        const part = literalValue.substring(0, 5)
+        literalValue = literalValue.substring(5)
+        keepReading = part[0] === '1'
+        resultBin += part.substring(1)
+      }
+
+      if (literalValue.length > 6) {
+        handlePacket(literalValue, counter)
+      }
+    } else {
+      const lengthTypeId = packet.substring(6, 7)
+      if (lengthTypeId === '0') {
+        const lengthInBits = parseInt(packet.substring(7, 22), 2)
+        console.log('lengthInBits:', lengthInBits)
+        let subPackets = packet.substring(22)
+        handlePacket(subPackets.substring(0, lengthInBits))
+      } else {
+        const numberOfSubPackets = parseInt(packet.substring(7, 18), 2)
+        let subPackets = packet.substring(18)
+        console.log('numberOfSubPackets:', numberOfSubPackets)
+        handlePacket(subPackets, numberOfSubPackets)
+      }
+    }
   }
 }
 
