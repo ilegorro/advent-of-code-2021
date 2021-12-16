@@ -1,18 +1,6 @@
 'use strict'
 const fs = require('fs')
 
-// function parseLiteralValue(literalValue) {
-//   let resultBin = ''
-//   let keepReading = true
-//   while (keepReading) {
-//     const part = literalValue.substring(0, 5)
-//     literalValue = literalValue.substring(5)
-//     keepReading = part[0] === '1'
-//     resultBin += part.substring(1)
-//   }
-//   return resultBin
-// }
-
 function solution1(data) {
   const dict = new Map()
   const dictReverse = new Map()
@@ -21,72 +9,72 @@ function solution1(data) {
     dictReverse.set(parseInt(el, 16).toString(2).padStart(4, '0'), el)
   })
 
-  let binString = ''
+  let bits = ''
   data.forEach((el) => {
-    binString += dict.get(el)
+    bits += dict.get(el)
   })
 
   let packetVersionSum = 0
-  handlePacket(binString)
+  let startState = { bits, pos: 0 }
+  let keepGoing = true
+  while (keepGoing) {
+    keepGoing = readPacket(startState)
+  }
   console.log(packetVersionSum)
 
-  function handlePacket(packet, counter) {
-    console.log(packet)
-    if (typeof counter === 'number') {
-      if (counter === 0) {
-        counter = undefined
-        return
-      } else {
-        counter--
-      }
-    }
-
-    const packetVersion = +dictReverse.get(
-      packet.substring(0, 3).padStart(4, '0')
-    )
-    packetVersionSum += packetVersion
-    const packetTypeId = +dictReverse.get(
-      packet.substring(3, 6).padStart(4, '0')
-    )
-
-    console.log({ packetVersion })
-
-    if (packetTypeId === 4) {
-      console.log('literal')
-      let literalValue = packet.substring(6)
-      let resultBin = ''
-      let keepReading = true
-      while (keepReading) {
-        const part = literalValue.substring(0, 5)
-        literalValue = literalValue.substring(5)
-        keepReading = part[0] === '1'
-        resultBin += part.substring(1)
-      }
-
-      if (literalValue.length > 6) {
-        handlePacket(literalValue, counter)
-      }
+  function readBits(state, num) {
+    if (state.pos === state.bits.length) {
+      return false
     } else {
-      const lengthTypeId = packet.substring(6, 7)
-      if (lengthTypeId === '0') {
-        const lengthInBits = parseInt(packet.substring(7, 22), 2)
-        console.log('lengthInBits:', lengthInBits)
-        let subPackets = packet.substring(22)
-        handlePacket(subPackets.substring(0, lengthInBits))
+      let res = state.bits.slice(state.pos, state.pos + num)
+      state.pos += num
+      if (num === 3) {
+        return parseInt(`0${res}`, 2)
+      } else if (num === 5) {
+        return +res[0]
       } else {
-        const numberOfSubPackets = parseInt(packet.substring(7, 18), 2)
-        let subPackets = packet.substring(18)
-        console.log('numberOfSubPackets:', numberOfSubPackets)
-        handlePacket(subPackets, numberOfSubPackets)
+        return parseInt(res, 2)
       }
     }
+  }
+
+  function readPacket(state) {
+    let version = readBits(state, 3)
+    let type = readBits(state, 3)
+    if (version === false || type === false) return false
+
+    if (type === 4) {
+      while (true) {
+        let chunkStart = readBits(state, 5)
+        if (chunkStart === 0) break
+      }
+      packetVersionSum += version
+    } else {
+      let lengthTypeId = readBits(state, 1)
+      if (lengthTypeId === 0) {
+        packetVersionSum += version
+        let length = readBits(state, 15)
+        let sub = state.bits.slice(state.pos, state.pos + length)
+        let subState = { bits: sub, pos: 0 }
+        let keepGoing = true
+        while (keepGoing) {
+          keepGoing = readPacket(subState)
+        }
+        state.pos += length
+      } else {
+        packetVersionSum += version
+        let packets = readBits(state, 11)
+        for (let i = 0; i < packets; i++) readPacket(state)
+      }
+    }
+    return true
   }
 }
 
 function solution2(data) {}
 
 const data = fs
-  .readFileSync(`${__dirname}/advent_16_input_test.txt`, 'utf8')
+  .readFileSync(`${__dirname}/advent_16_input.txt`, 'utf8')
   .split('')
 
 solution1(data)
