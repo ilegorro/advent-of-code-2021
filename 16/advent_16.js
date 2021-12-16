@@ -43,16 +43,16 @@ function solution1(data) {
     let type = readBits(state, 3)
     if (version === false || type === false) return false
 
+    packetVersionSum += version
+
     if (type === 4) {
       while (true) {
         let chunkStart = readBits(state, 5)
         if (chunkStart === 0) break
       }
-      packetVersionSum += version
     } else {
       let lengthTypeId = readBits(state, 1)
       if (lengthTypeId === 0) {
-        packetVersionSum += version
         let length = readBits(state, 15)
         let sub = state.bits.slice(state.pos, state.pos + length)
         let subState = { bits: sub, pos: 0 }
@@ -62,9 +62,8 @@ function solution1(data) {
         }
         state.pos += length
       } else {
-        packetVersionSum += version
-        let packets = readBits(state, 11)
-        for (let i = 0; i < packets; i++) readPacket(state)
+        let packetsCount = readBits(state, 11)
+        for (let i = 0; i < packetsCount; i++) readPacket(state)
       }
     }
     return true
