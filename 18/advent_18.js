@@ -60,7 +60,7 @@ function solution(data) {
   }
 
   function explode(str) {
-    console.log(str)
+    //console.log(str)
     const pairToExplodeIdx = findPairToExplode(str)
     if (pairToExplodeIdx) {
       const pairToExplode = str.substring(
@@ -71,10 +71,10 @@ function solution(data) {
         .split(',')
         .map((el) => +el.match(/[0-9]+/)[0])
       console.log(pairToExplode)
-      console.log(numsToExplode)
+      // console.log(numsToExplode)
 
       const leftNumber = findLeftNumber(str, pairToExplodeIdx[0])
-      console.log('left number. value:', leftNumber[0], ', pos:', leftNumber[1])
+      // console.log('left number. value:', leftNumber[0], ', pos:', leftNumber[1])
 
       const rightNumber = findRightNumber(str, pairToExplodeIdx[1])
 
@@ -95,9 +95,9 @@ function solution(data) {
 
       if (rightNumber) {
         str =
-          str.slice(0, rightNumber[1] + 1) +
+          str.slice(0, rightNumber[1] + 1 + shift) +
           (+rightNumber[0] + numsToExplode[1]) +
-          str.slice(rightNumber[0].length + 1 + rightNumber[1])
+          str.slice(rightNumber[0].length + 1 + shift + rightNumber[1])
       }
 
       str =
@@ -105,16 +105,22 @@ function solution(data) {
         '0' +
         str.slice(pairToExplodeIdx[1] + shift + 1)
 
-      console.log(str)
+      //console.log(str)
 
-      //explode(str)
+      return [true, str]
     }
+    return [false, str]
   }
 
   let sum = data[0]
   for (let i = 1; i < data.length; i++) {
     sum = `[${sum},${data[i]}]`
-    explode(sum)
+    console.log(sum)
+    let keep = true
+    while (keep) {
+      ;[keep, sum] = explode(sum)
+      console.log(sum)
+    }
   }
 }
 
