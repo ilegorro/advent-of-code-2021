@@ -60,7 +60,6 @@ function solution(data) {
   }
 
   function explode(str) {
-    //console.log(str)
     const pairToExplodeIdx = findPairToExplode(str)
     if (pairToExplodeIdx) {
       const pairToExplode = str.substring(
@@ -70,12 +69,9 @@ function solution(data) {
       const numsToExplode = pairToExplode
         .split(',')
         .map((el) => +el.match(/[0-9]+/)[0])
-      console.log(pairToExplode)
-      // console.log(numsToExplode)
+      //console.log(pairToExplode)
 
       const leftNumber = findLeftNumber(str, pairToExplodeIdx[0])
-      // console.log('left number. value:', leftNumber[0], ', pos:', leftNumber[1])
-
       const rightNumber = findRightNumber(str, pairToExplodeIdx[1])
 
       let shift = 0
@@ -105,22 +101,54 @@ function solution(data) {
         '0' +
         str.slice(pairToExplodeIdx[1] + shift + 1)
 
-      //console.log(str)
-
+      console.log('after explode', str)
       return [true, str]
     }
     return [false, str]
   }
 
+  function split(str) {
+    const bigNumRegex = /[0-9]{2,}/
+    const posBigNum = str.search(bigNumRegex)
+    if (posBigNum !== -1) {
+      const numGroup = str.match(bigNumRegex)
+      const numLen = numGroup.length
+      const leftNum = Math.floor(+numGroup / 2)
+      const rightNum = Math.ceil(+numGroup / 2)
+
+      const newStr =
+        str.slice(0, posBigNum) +
+        `[${leftNum},${rightNum}]` +
+        str.slice(posBigNum + numLen + 1)
+
+      console.log('after split', newStr)
+      return [true, newStr]
+    }
+
+    return [false, str]
+  }
+
+  function handleSum(sum) {
+    let keep = true
+    let splitted = false
+    while (keep) {
+      ;[keep, sum] = explode(sum)
+      //console.log(sum)
+    }
+    ;[splitted, sum] = split(sum)
+
+    if (splitted) {
+      sum = handleSum(sum)
+    }
+    return sum
+  }
+
   let sum = data[0]
   for (let i = 1; i < data.length; i++) {
     sum = `[${sum},${data[i]}]`
-    console.log(sum)
-    let keep = true
-    while (keep) {
-      ;[keep, sum] = explode(sum)
-      console.log(sum)
-    }
+    console.log('before:', sum)
+    sum = handleSum(sum)
+    console.log('after', sum)
   }
 }
 
