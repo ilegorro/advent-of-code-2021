@@ -168,13 +168,27 @@ function solution(data) {
     return str
   }
 
+  // Part 1
   let sum = data[0]
   for (let i = 1; i < data.length; i++) {
     sum = `[${sum},${data[i]}]`
     sum = handleSum(sum)
   }
+  console.log('magnitude:', getMagnitude(sum))
 
-  console.log('magnitude', getMagnitude(sum))
+  //Part 2
+  const mags = []
+  for (let i = 0; i < data.length - 1; i++) {
+    for (let j = 1; j < data.length; j++) {
+      let sum = `[${data[i]},${data[j]}]`
+      sum = handleSum(sum)
+      mags.push(getMagnitude(sum))
+      sum = `[${data[j]},${data[i]}]`
+      sum = handleSum(sum)
+      mags.push(getMagnitude(sum))
+    }
+  }
+  console.log('max magnitude:', Math.max(...mags))
 }
 
 const data = fs
