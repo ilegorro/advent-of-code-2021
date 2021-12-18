@@ -26,7 +26,7 @@ function solution(data) {
   }
 
   const findLeftNumber = (str, startPos) => {
-    const regNumRegex = /\[[0-9]+\,\[|\]\,[0-9]+\]/
+    const regNumRegex = /[0-9]+/
     const regex = new RegExp(regNumRegex, 'g')
     let lastIndex = 0
 
@@ -49,7 +49,8 @@ function solution(data) {
   }
 
   const findRightNumber = (str, startPos) => {
-    const regNumRegex = /\[[0-9]+\,\[|\]\,[0-9]+\]/
+    //const regNumRegex = /\[[0-9]+\,\[|\]\,[0-9]+\]/
+    const regNumRegex = /[0-9]+/
     const posNumGroup = str.slice(startPos).search(regNumRegex)
     const numGroup = str.slice(startPos).match(regNumRegex)
     if (posNumGroup !== -1) {
@@ -101,7 +102,7 @@ function solution(data) {
         '0' +
         str.slice(pairToExplodeIdx[1] + shift + 1)
 
-      console.log('after explode', str)
+      // console.log('after explode', str)
       return [true, str]
     }
     return [false, str]
@@ -121,7 +122,6 @@ function solution(data) {
         `[${leftNum},${rightNum}]` +
         str.slice(posBigNum + numLen + 1)
 
-      console.log('after split', newStr)
       return [true, newStr]
     }
 
@@ -133,7 +133,6 @@ function solution(data) {
     let splitted = false
     while (keep) {
       ;[keep, sum] = explode(sum)
-      //console.log(sum)
     }
     ;[splitted, sum] = split(sum)
 
@@ -143,17 +142,43 @@ function solution(data) {
     return sum
   }
 
+  function handlePair(str) {
+    const regexGroup = /\[[0-9]+\,[0-9]+\]/
+    const posGroup = str.search(regexGroup)
+    if (posGroup !== -1) {
+      const numGroup = str.match(regexGroup)[0]
+      const lenGroup = numGroup.length
+      const numsToCalc = numGroup.split(',').map((el) => +el.match(/[0-9]+/)[0])
+      const res = numsToCalc[0] * 3 + numsToCalc[1] * 2
+
+      const newStr =
+        str.slice(0, posGroup) + res + str.slice(posGroup + lenGroup)
+
+      return [true, newStr]
+    }
+
+    return [false, str]
+  }
+
+  function getMagnitude(str) {
+    let keep = true
+    while (keep) {
+      ;[keep, str] = handlePair(str)
+    }
+    return str
+  }
+
   let sum = data[0]
   for (let i = 1; i < data.length; i++) {
     sum = `[${sum},${data[i]}]`
-    console.log('before:', sum)
     sum = handleSum(sum)
-    console.log('after', sum)
   }
+
+  console.log('magnitude', getMagnitude(sum))
 }
 
 const data = fs
-  .readFileSync(`${__dirname}/advent_18_input_test.txt`, 'utf8')
+  .readFileSync(`${__dirname}/advent_18_input.txt`, 'utf8')
   .split('\n')
 
 solution(data)
